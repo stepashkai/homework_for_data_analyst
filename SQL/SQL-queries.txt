@@ -1,0 +1,37 @@
+/*Первый запрос*/
+SELECT name, COUNT(passenger) AS count
+FROM Passenger JOIN Pass_in_trip
+ON Passenger.id = Pass_in_trip.passenger
+GROUP BY Pass_in_trip.passenger
+ORDER BY count DESC, name ASC
+
+/*Второй запрос*/
+SELECT TIMEDIFF((SELECT end_pair FROM Timepair WHERE id = 4),
+(SELECT start_pair FROM Timepair WHERE id = 2)) AS time
+
+/*Третий запрос*/
+SELECT * FROM Rooms WHERE id IN (SELECT room_id FROM Reservations WHERE (start_date > "20200316") AND (start_date < "20200322"))
+
+/*Четвертый запрос*/
+SELECT classroom FROM Schedule GROUP BY classroom HAVING COUNT(classroom) = 
+(SELECT MAX(quantity) AS maximum FROM (SELECT COUNT(classroom) as quantity FROM Schedule GROUP BY classroom) AS Number)
+
+/*Пятый запрос*/
+Точное решение получить не выходит, однако суть состоит в том, чтобы объединить два запроса в одно отношение (таблицу). Воспользовавшисб справочными ссылками
+по данной задаче, сделать это можно посредством использования операции CROSS APPLY. В первом запросе мы посредством использования функции LAG (полуоткрытый
+интервал имеет открытый конец слева, поэтому используем именно LAG вместо LEAD) и выводя лишь
+последовательные даты (в выделении последовательных дат у меня и возникают затруднения) выведем таблицу из двух столбцов, где каждая последующая дата из первого
+столбца будет соответствовать дате из предыдущей строчке предыдущего столбца. Провести данную операцию можно посредством использования следующего запроса:
+SELECT
+LAG([date]) OVER (ORDER BY [date]) AS dt_1,
+[date] AS dt_2
+FROM Income_o
+Затем во втором запросе нужно найти разницу между поступающими и выходящими денежными средствами из двух таблиц Income_o и Outcome_o. Сделать это можно с помощью
+подобного запроса:
+SELECT SUM(out)FROM Outcome_o GROUP BY [date]
+Результат выдается неверный, так как мне неясно, по какому условию необходимо проводить группировку (количество записей в данном запросе превышает количество записей
+в первом запросе)
+То есть главная проблема в получении необходимых сумм денег для каждых последовательных интервалов.
+
+/*Шестой запрос*/
+
